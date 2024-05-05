@@ -7,6 +7,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Media;
+using NAudio.Wave;
 
 namespace AlarmProject
 {
@@ -16,6 +18,8 @@ namespace AlarmProject
         private bool isDragging = false;
         private Point lastCursorPos;
         private Point lastFormPos;
+        private string alarmMusicPath = "../../Resources/audio/Alarm1.mp3";
+        string path = "../../Resources/audio/alarm2.mp3";
         public Form1()
         {
             InitializeComponent();
@@ -55,71 +59,77 @@ namespace AlarmProject
                 this.Location = new Point(lastFormPos.X + deltaX, lastFormPos.Y + deltaY);
             }
         }
-
+        static void Play(string path)
+        {
+            // NAudio kütüphanesini kullanarak MP3 dosyasını çal
+            using (var audioFile = new AudioFileReader(path))
+            using (var outputDevice = new WaveOutEvent())
+            {
+                outputDevice.Init(audioFile);
+                outputDevice.Play();
+                // Dosya çalarken ekrana sürekli olarak zaman bilgisi yazdır
+                while (outputDevice.PlaybackState == PlaybackState.Playing)
+                {
+                    Console.WriteLine(audioFile.CurrentTime.ToString());
+                    System.Threading.Thread.Sleep(500); // Yazdırma aralığını ayarla
+                }
+            }
+        }
         private void Form1_Load(object sender, EventArgs e)
         {
             timer1.Enabled = true;
         }
-
+        Alarm alarm = new Alarm();
+        string nowHMh;
         private void timer1_Tick(object sender, EventArgs e)
         {
             int hour = DateTime.Now.Hour;
             int minute = DateTime.Now.Minute;
-            int second= DateTime.Now.Second;
+            int second = DateTime.Now.Second;
             string now = hour.ToString() + ":" + minute.ToString() + ":" + second.ToString();
             Lab_now.Text = now;
+            string nowHM = hour.ToString() + ":" + minute.ToString();
+            nowHMh = nowHM;
+            listBox1.Items.Clear();
+            for (int i = 0; i < alarm.alss.Count; i++)
+            {
+                listBox1.Items.Add(alarm.alss[i]);
+            }
+
+            for (int i = 0; i < listBox1.Items.Count; i++)
+            {
+                if (listBox1.Items[i].ToString() == nowHMh)
+                {
+                    Play(path);
+                    
+                }
+            }
 
         }
 
         private void Lab_now_Click(object sender, EventArgs e)
         {
-            var alarmH = DateTime.Now.AddHours(int.Parse(textBox1.Text));
-            var alarmM = DateTime.Now.AddMinutes(int.Parse(textBox2.Text));
-            MessageBox.Show("Test "+alarmH+"\n"+alarmM);
+            //var alarmH = DateTime.Now.AddHours(int.Parse(textBox1.Text));
+            //var alarmM = DateTime.Now.AddMinutes(int.Parse(textBox2.Text));
+            //MessageBox.Show("Test "+alarmH+"\n"+alarmM);
+            Form2 fr2 = new Form2();
+            fr2.ShowDialog();
         }
 
+        private void Form1_MouseHover(object sender, EventArgs e)
+        {
+        }
 
-        /*
-*Point ResizeLocation = Point.Empty;
-void panResize_MouseDown(object sender, System.Windows.Forms.MouseEventArgs e)
-{
-if (e.Button == MouseButtons.Left) {
-ResizeLocation = e.Location;
-ResizeLocation.Offset(-panResize.Width, -panResize.Height);
-if (!(ResizeLocation.X > -16 || ResizeLocation.Y > -16))
-ResizeLocation = Point.Empty;
-}
-else
-ResizeLocation = Point.Empty;
-}
-void panResize_MouseMove(object sender, System.Windows.Forms.MouseEventArgs e)
-{
-if (e.Button == MouseButtons.Left && !ResizeLocation.IsEmpty) {
-if (panResize.Cursor == Cursors.SizeNWSE)
-Size = new Size(e.Location.X - ResizeLocation.X, e.Location.Y - ResizeLocation.Y);
-else if (panResize.Cursor == Cursors.SizeWE)
-Size = new Size(e.Location.X - ResizeLocation.X, Size.Height);
-else if (panResize.Cursor == Cursors.SizeNS)
-Size = new Size(Size.Width, e.Location.Y - ResizeLocation.Y);
-}
-else if (e.X - panResize.Width > -16 && e.Y - panResize.Height > -16)
-panResize.Cursor = Cursors.SizeNWSE;
-else if (e.X - panResize.Width > -16)
-panResize.Cursor = Cursors.SizeWE;
-else if (e.Y - panResize.Height > -16)
-panResize.Cursor = Cursors.SizeNS;
-else {
-panResize.Cursor = Cursors.Default;
-}
+        private void label1_Click(object sender, EventArgs e)
+        {
 
-}
+        }
 
-void panResize_MouseUp(object sender, System.Windows.Forms.MouseEventArgs e)
-{
-ResizeLocation = Point.Empty;
-}
-*
-*/
+        private void listBox1_ValueMemberChanged(object sender, EventArgs e)
+        {
+            MessageBox.Show("text");
+            
+        }
     }
 
 }
